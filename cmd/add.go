@@ -12,9 +12,6 @@ import (
 )
 
 func parseArgs(args []string) (string, string) {
-	if len(args) <= 0 {
-		fmt.Errorf("At least one argument is required for account name")
-	}
 	if len(args) == 1 {
 		return args[0], ""
 	}
