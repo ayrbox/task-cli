@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var dataFolder string
@@ -47,6 +48,25 @@ func writeToFile(filepath string, content []byte) error {
 	return nil
 }
 
+func getFiles() ([]string, error) {
+	files, err := os.ReadDir(dataFolder)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read data folders: %v", err)
+	}
+
+	var fileNames []string
+	for _, file := range files {
+		fileName := file.Name()
+
+		// remove file extension
+		fileId, _ := strings.CutSuffix(fileName, filepath.Ext(fileName))
+
+		fileNames = append(fileNames, fileId)
+	}
+
+	return fileNames, nil
+}
+
 func (t *Task) Write() error {
 	jsonBytes, err := json.Marshal(t)
 	if err != nil {
@@ -69,4 +89,24 @@ func GetTask(taskId string) (Task, error) {
 		return task, fmt.Errorf("Unable to unmarshal data: %v", err)
 	}
 	return task, nil
+}
+
+func GetTasks() ([]Task, error) {
+	var tasks []Task
+
+	files, err := getFiles()
+	if err != nil {
+		return tasks, fmt.Errorf("Unable read files: %v", err)
+	}
+
+	for _, filename := range files {
+		t, err := GetTask(filename)
+		if err != nil {
+			fmt.Printf("Unable to read task: %s\n", filename)
+			continue
+		}
+		tasks = append(tasks, t)
+	}
+
+	return tasks, nil
 }
